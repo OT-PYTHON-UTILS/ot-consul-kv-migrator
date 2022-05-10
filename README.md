@@ -3,6 +3,8 @@
 Key-value store is one of the important feature provided by Consul which is used by multiple Engineers for multiple use-cases.
 Migration is one of the challenging task which user faces while using consul. So, We created python script will helps user to migrate key-value data from one consul server to another and also helps user to get information about migration by getting different types of output like in JSON & Table.
 
+<p style="text-align:center;"><img src="./screenshots/keyvalue_logo.png" height="150"><img src="./screenshots/consul_logo.svg" height="300"><img src="./screenshots/migrate_logo.png" height="200"></p>
+
 ## prerequisite
 - Two consul servers
 - python3
