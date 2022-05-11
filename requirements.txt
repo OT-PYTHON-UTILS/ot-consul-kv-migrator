@@ -1,0 +1,6 @@
+prettytable==3.3.0
+consul-kv==0.7.3
+getopt
+sys
+ast
+json
