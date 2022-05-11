@@ -1,9 +1,10 @@
-from consul_kv import Connection
-import json
 import ast
-from prettytable import PrettyTable
 import getopt
 import sys
+import socket
+from consul_kv import Connection
+from prettytable import PrettyTable
+import urllib.request,urllib.parse,urllib.error
 
 argv = sys.argv[1:]
 
@@ -34,36 +35,59 @@ for opt, arg in opts:
   if opt in ['-o']:
     _outputType = arg
   elif opt in ['-h']:
-    print("Usage: python <NAME-OF-SCRIPT>.py ... [ -<OPTIONS> <VALUES>]")
-    print("")
-    print("Mendatory Option and arguments")
-    print("")
+    print("Usage: python <NAME-OF-SCRIPT>.py ... [ -<OPTIONS> <VALUES>]\n")
+    print("Mendatory Option and arguments\n")
     print("-s : Provide source consul URL")
-    print("     FORMAT: -s <VALUE>")
-    print("")
+    print("     FORMAT: -s <VALUE>\n")
     print("-d : Provide destination consul URL")
-    print("     FORMAT: -d <VALUE>")
-    print("")
+    print("     FORMAT: -d <VALUE>\n")
     print("-o : Provide database hostname")
-    print("")
     print("     FORMAT: -o <VALUE>")
     print("     SUPPORTED TAGS:")
     print("         - json")
-    print("         - table")
-    print("")
-    print("")
+    print("         - table\n")
     print("AUTHOR: https://github.com/b44rawat")
-    print("")
     sys.exit()
 
 try:
-    _sourceConsulObjectVar = Connection(endpoint=_sourceConsulLink)
-    _destinationConsulObjectVar = Connection(endpoint=_destinationConsulLink)
-except:
-    print('Check with -h tag to get more detail about utils options')
+  _sourceConsulObjectVar = Connection(endpoint=_sourceConsulLink)
+except NameError:
+    print('Check with -h tag to get more detail about -s option')
+    sys.exit()
+except urllib.error.URLError:
+    print('Check with -h tag to get more detail about -s option')
+    sys.exit()
+except socket.gaierror:
+    print('Check with -h tag to get more detail about -s option')
     sys.exit()
 
-_consulKvPathVar = _sourceConsulObjectVar.get('.', recurse=True)
+
+try:
+  _destinationConsulObjectVar = Connection(endpoint=_destinationConsulLink)
+except NameError:
+    print('Check with -h tag to get more detail about -d option')
+    sys.exit()
+except urllib.error.URLError:
+    print('Check with -h tag to get more detail about -d option')
+    sys.exit()
+except socket.gaierror:
+    print('Check with -h tag to get more detail about -d option')
+    sys.exit()
+
+try:
+  _consulKvPathVar = _sourceConsulObjectVar.get('.', recurse=True)
+except ValueError as e:
+  print("Check with -h tag to get more detail about -s option")
+  sys.exit()
+except urllib.error.URLError as e:
+  print("Check with -h tag to get more detail about -s option")
+  sys.exit()
+except urllib.error.HTTPError as e:
+  print("Check with -h tag to get more detail about -s option")
+  sys.exit()
+except NameError as e:
+  print("Check with -h tag to get more detail about -s option")
+  sys.exit()
 
 def _consulMigrateKv():
     _consulKvOutputStoreJsonVar=[]
@@ -82,16 +106,17 @@ _consulMigrateOutputKvVar = _consulMigrateKv()
 
 _consulKvOutputStoreTableVar = PrettyTable(["Key", "Value", "Status"])
 
-def formattedFunction(__consulKvOutputStoreJsonVar):
-    _realdict = ast.literal_eval(__consulKvOutputStoreJsonVar)
-    _consulKvOutputStoreTableVar.add_row([_realdict['key'], _realdict['value'], _realdict['status']])
+if __name__ == "__main__":
+  def formattedFunction(__consulKvOutputStoreJsonVar):
+      _realdict = ast.literal_eval(__consulKvOutputStoreJsonVar)
+      _consulKvOutputStoreTableVar.add_row([_realdict['key'], _realdict['value'], _realdict['status']])
 
-for _tableConsulMigrateOutputKvVar in _consulMigrateOutputKvVar:
-    formattedFunction(_tableConsulMigrateOutputKvVar)
+  for _tableConsulMigrateOutputKvVar in _consulMigrateOutputKvVar:
+      formattedFunction(_tableConsulMigrateOutputKvVar)
 
-if _outputType == "json":
-    print(_consulMigrateOutputKvVar)
-elif _outputType == "table":     
-    print(_consulKvOutputStoreTableVar)
-else:
-    print("Check with -h tag to get more detail about utils options")
+  if _outputType == "json":
+      print(_consulMigrateOutputKvVar)
+  elif _outputType == "table":     
+      print(_consulKvOutputStoreTableVar)
+  else:
+      print("Check with -h tag to get more detail about utils options")
